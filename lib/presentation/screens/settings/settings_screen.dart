@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/utils/app_translations.dart';
 import '../../../providers/providers.dart';
 
 class SettingsScreen extends ConsumerWidget {
@@ -11,23 +12,26 @@ class SettingsScreen extends ConsumerWidget {
     final isDarkMode = ref.watch(isDarkModeProvider);
     final currencySymbol = ref.watch(currencySymbolProvider);
     final settings = ref.watch(settingsProvider);
+    final lang = settings.languageCode;
+    
+    String t(String key) => AppTranslations.get(key, lang);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Settings'),
+        title: Text(t('settings')),
       ),
       body: ListView(
         children: [
           const SizedBox(height: 8),
           _buildSection(
             context,
-            title: 'Appearance',
+            title: t('appearance'),
             children: [
               ListTile(
                 leading: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.blue.withOpacity(0.1),
+                    color: Colors.blue.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Icon(
@@ -35,7 +39,7 @@ class SettingsScreen extends ConsumerWidget {
                     color: Colors.blue,
                   ),
                 ),
-                title: const Text('Dark Mode'),
+                title: Text(t('darkMode')),
                 subtitle: Text(isDarkMode ? 'On' : 'Off'),
                 trailing: Switch(
                   value: isDarkMode,
@@ -48,13 +52,13 @@ class SettingsScreen extends ConsumerWidget {
           ),
           _buildSection(
             context,
-            title: 'Currency',
+            title: t('preferences'),
             children: [
               ListTile(
                 leading: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.green.withOpacity(0.1),
+                    color: Colors.green.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: const Icon(
@@ -62,22 +66,39 @@ class SettingsScreen extends ConsumerWidget {
                     color: Colors.green,
                   ),
                 ),
-                title: const Text('Currency'),
+                title: Text(t('currency')),
                 subtitle: Text('${settings.currency} ($currencySymbol)'),
                 trailing: const Icon(Icons.chevron_right),
-                onTap: () => _showCurrencyPicker(context, ref, settings.currency),
+                onTap: () => _showCurrencyPicker(context, ref, settings.currency, t),
+              ),
+              ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.teal.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(
+                    Icons.language,
+                    color: Colors.teal,
+                  ),
+                ),
+                title: Text(t('language')),
+                subtitle: Text(_getLanguageName(settings.languageCode)),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => _showLanguagePicker(context, ref, settings.languageCode),
               ),
             ],
           ),
           _buildSection(
             context,
-            title: 'About',
+            title: t('about'),
             children: [
               ListTile(
                 leading: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.purple.withOpacity(0.1),
+                    color: Colors.purple.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: const Icon(
@@ -85,14 +106,14 @@ class SettingsScreen extends ConsumerWidget {
                     color: Colors.purple,
                   ),
                 ),
-                title: const Text('Version'),
+                title: Text(t('version')),
                 subtitle: const Text('1.0.0'),
               ),
               ListTile(
                 leading: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.orange.withOpacity(0.1),
+                    color: Colors.orange.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: const Icon(
@@ -100,7 +121,7 @@ class SettingsScreen extends ConsumerWidget {
                     color: Colors.orange,
                   ),
                 ),
-                title: const Text('Built with Flutter'),
+                title: Text(t('builtWithFlutter')),
                 subtitle: const Text('Personal Finance Tracker'),
               ),
             ],
@@ -108,6 +129,17 @@ class SettingsScreen extends ConsumerWidget {
         ],
       ),
     );
+  }
+
+  String _getLanguageName(String code) {
+    switch (code) {
+      case 'fr':
+        return 'Français';
+      case 'ar':
+        return 'العربية';
+      default:
+        return 'English';
+    }
   }
 
   Widget _buildSection(BuildContext context, {required String title, required List<Widget> children}) {
@@ -132,7 +164,7 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  void _showCurrencyPicker(BuildContext context, WidgetRef ref, String currentCurrency) {
+  void _showCurrencyPicker(BuildContext context, WidgetRef ref, String currentCurrency, String Function(String) t) {
     final currencies = [
       {'code': 'USD', 'symbol': '\$', 'name': 'US Dollar'},
       {'code': 'EUR', 'symbol': '€', 'name': 'Euro'},
@@ -181,8 +213,8 @@ class SettingsScreen extends ConsumerWidget {
                       height: 40,
                       decoration: BoxDecoration(
                         color: isSelected
-                            ? AppTheme.primaryColor.withOpacity(0.1)
-                            : Colors.grey.withOpacity(0.1),
+                            ? AppTheme.primaryColor.withValues(alpha: 0.1)
+                            : Colors.grey.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Center(
@@ -212,6 +244,75 @@ class SettingsScreen extends ConsumerWidget {
                 },
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showLanguagePicker(BuildContext context, WidgetRef ref, String currentLanguage) {
+    final languages = [
+      {'code': 'en', 'name': 'English', 'native': 'English'},
+      {'code': 'fr', 'name': 'French', 'native': 'Français'},
+      {'code': 'ar', 'name': 'Arabic', 'native': 'العربية'},
+    ];
+
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => Container(
+        padding: const EdgeInsets.symmetric(vertical: 20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Row(
+                children: [
+                  Text(
+                    'Select Language',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            ...languages.map((language) {
+              final isSelected = language['code'] == currentLanguage;
+              return ListTile(
+                leading: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? AppTheme.primaryColor.withValues(alpha: 0.1)
+                        : Colors.grey.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Center(
+                    child: Text(
+                      language['code']!.toUpperCase(),
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: isSelected ? AppTheme.primaryColor : Colors.grey,
+                      ),
+                    ),
+                  ),
+                ),
+                title: Text(language['native']!),
+                subtitle: Text(language['name']!),
+                trailing: isSelected
+                    ? const Icon(Icons.check_circle, color: AppTheme.primaryColor)
+                    : null,
+                onTap: () {
+                  ref.read(settingsProvider.notifier).setLanguage(language['code']!);
+                  Navigator.pop(context);
+                },
+              );
+            }),
           ],
         ),
       ),

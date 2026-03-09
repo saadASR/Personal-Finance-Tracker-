@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/utils/app_translations.dart';
 import '../../providers/providers.dart';
 import 'dashboard/dashboard_screen.dart';
 import 'transactions/transactions_screen.dart';
@@ -36,6 +37,8 @@ class MainNavigationState extends ConsumerState<MainNavigation> {
   @override
   Widget build(BuildContext context) {
     final isDarkMode = ref.watch(isDarkModeProvider);
+    final lang = ref.watch(settingsProvider).languageCode;
+    String t(String key) => AppTranslations.get(key, lang);
     
     return Scaffold(
       body: IndexedStack(
@@ -46,6 +49,7 @@ class MainNavigationState extends ConsumerState<MainNavigation> {
         currentIndex: _currentIndex,
         onTap: setIndex,
         isDarkMode: isDarkMode,
+        t: t,
       ),
     );
   }
@@ -55,11 +59,13 @@ class _iOSNavigationBar extends StatelessWidget {
   final int currentIndex;
   final Function(int) onTap;
   final bool isDarkMode;
+  final String Function(String) t;
 
   const _iOSNavigationBar({
     required this.currentIndex,
     required this.onTap,
     required this.isDarkMode,
+    required this.t,
   });
 
   @override
@@ -89,14 +95,14 @@ class _iOSNavigationBar extends StatelessWidget {
               children: [
                 _iOSNavItem(
                   icon: Icons.dashboard_rounded,
-                  label: 'Dashboard',
+                  label: t('dashboard'),
                   isSelected: currentIndex == 0,
                   onTap: () => onTap(0),
                   isDarkMode: isDarkMode,
                 ),
                 _iOSNavItem(
                   icon: Icons.receipt_long_rounded,
-                  label: 'Transactions',
+                  label: t('transactions'),
                   isSelected: currentIndex == 1,
                   onTap: () => onTap(1),
                   isDarkMode: isDarkMode,
@@ -111,14 +117,14 @@ class _iOSNavigationBar extends StatelessWidget {
                 ),
                 _iOSNavItem(
                   icon: Icons.account_balance_wallet_rounded,
-                  label: 'Budgets',
+                  label: t('budgets'),
                   isSelected: currentIndex == 3,
                   onTap: () => onTap(3),
                   isDarkMode: isDarkMode,
                 ),
                 _iOSNavItem(
                   icon: Icons.settings_rounded,
-                  label: 'Settings',
+                  label: t('settings'),
                   isSelected: currentIndex == 4,
                   onTap: () => onTap(4),
                   isDarkMode: isDarkMode,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import '../../../core/utils/app_translations.dart';
 import '../../../data/models/models.dart';
 import '../../../providers/providers.dart';
 import '../../widgets/widgets.dart';
@@ -13,11 +14,13 @@ class TransactionsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final transactions = ref.watch(monthlyTransactionsProvider);
     final selectedMonth = ref.watch(selectedMonthProvider);
-    final currencySymbol = ref.watch(currencySymbolProvider);
+    final lang = ref.watch(settingsProvider).languageCode;
+    
+    String t(String key) => AppTranslations.get(key, lang);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Transactions'),
+        title: Text(t('transactions')),
       ),
       body: Column(
         children: [
@@ -34,12 +37,12 @@ class TransactionsScreen extends ConsumerWidget {
             child: transactions.isEmpty
                 ? EmptyState(
                     icon: Icons.receipt_long_outlined,
-                    title: 'No transactions yet',
-                    subtitle: 'Tap the + button to add your first transaction',
+                    title: t('noTransactions'),
+                    subtitle: t('addFirst'),
                     action: ElevatedButton.icon(
                       onPressed: () => _showAddTransaction(context),
                       icon: const Icon(Icons.add),
-                      label: const Text('Add Transaction'),
+                      label: Text(t('addTransaction')),
                     ),
                   )
                 : ListView.builder(
@@ -53,8 +56,8 @@ class TransactionsScreen extends ConsumerWidget {
                         onDelete: () {
                           ref.read(transactionsProvider.notifier).deleteTransaction(transaction.id);
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Transaction deleted'),
+                            SnackBar(
+                              content: Text(t('delete')),
                               behavior: SnackBarBehavior.floating,
                             ),
                           );
@@ -68,7 +71,7 @@ class TransactionsScreen extends ConsumerWidget {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showAddTransaction(context),
         icon: const Icon(Icons.add),
-        label: const Text('Add'),
+        label: Text(t('addTransaction')),
       ).animate().scale(delay: 300.ms),
     );
   }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/utils/app_translations.dart';
 import '../../../data/models/models.dart';
 import '../../../providers/providers.dart';
 import '../../widgets/widgets.dart';
@@ -13,26 +14,29 @@ class CategoriesScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final incomeCategories = ref.watch(incomeCategoriesProvider);
     final expenseCategories = ref.watch(expenseCategoriesProvider);
+    final lang = ref.watch(settingsProvider).languageCode;
+    
+    String t(String key) => AppTranslations.get(key, lang);
 
     return DefaultTabController(
       length: 2,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Categories'),
+          title: Text(t('categories')),
           bottom: TabBar(
             labelColor: AppTheme.primaryColor,
             unselectedLabelColor: Colors.grey,
             indicatorColor: AppTheme.primaryColor,
-            tabs: const [
-              Tab(text: 'Income'),
-              Tab(text: 'Expenses'),
+            tabs: [
+              Tab(text: t('income')),
+              Tab(text: t('expense')),
             ],
           ),
         ),
         body: TabBarView(
           children: [
-            _buildCategoryList(context, ref, incomeCategories, true),
-            _buildCategoryList(context, ref, expenseCategories, false),
+            _buildCategoryList(context, ref, incomeCategories, true, t),
+            _buildCategoryList(context, ref, expenseCategories, false, t),
           ],
         ),
         floatingActionButton: FloatingActionButton.extended(
@@ -44,12 +48,12 @@ class CategoriesScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildCategoryList(BuildContext context, WidgetRef ref, List<CategoryModel> categories, bool isIncome) {
+  Widget _buildCategoryList(BuildContext context, WidgetRef ref, List<CategoryModel> categories, bool isIncome, String Function(String) t) {
     if (categories.isEmpty) {
       return EmptyState(
         icon: Icons.category_outlined,
-        title: 'No ${isIncome ? 'income' : 'expense'} categories',
-        subtitle: 'Tap the + button to create one',
+        title: t('noCategories'),
+        subtitle: t('addFirst'),
       );
     }
 
@@ -64,7 +68,7 @@ class CategoriesScreen extends ConsumerWidget {
             color: Color(category.colorValue),
           ),
           title: Text(category.name),
-          subtitle: category.isDefault ? const Text('Default category') : null,
+          subtitle: category.isDefault ? Text(t('defaultCategory')) : null,
           trailing: category.isDefault
               ? null
               : PopupMenuButton(

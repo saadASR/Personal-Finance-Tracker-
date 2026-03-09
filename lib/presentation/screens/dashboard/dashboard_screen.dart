@@ -4,6 +4,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/formatters.dart';
+import '../../../core/utils/app_translations.dart';
 import '../../../data/models/models.dart';
 import '../../../providers/providers.dart';
 import '../../widgets/widgets.dart';
@@ -18,6 +19,11 @@ class DashboardScreen extends ConsumerStatefulWidget {
 
 class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   int _touchedPieIndex = -1;
+
+  String _t(String key) {
+    final lang = ref.read(settingsProvider).languageCode;
+    return AppTranslations.get(key, lang);
+  }
 
   List<BudgetAlert> _calculateBudgetAlerts() {
     final selectedMonth = ref.read(selectedMonthProvider);
@@ -77,10 +83,11 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     final currencySymbol = ref.watch(currencySymbolProvider);
     final transactions = ref.watch(monthlyTransactionsProvider);
     final budgetAlerts = _calculateBudgetAlerts();
+    final t = _t;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Dashboard'),
+        title: Text(t('dashboard')),
         actions: [
           IconButton(
             icon: const Icon(Icons.notifications_outlined),
@@ -122,11 +129,12 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   }
 
   Widget _buildSummaryCards(double income, double expenses, double balance, String currencySymbol) {
+    final t = _t;
     return Row(
       children: [
         Expanded(
           child: SummaryCard(
-            title: 'Income',
+            title: t('income'),
             value: Formatters.currency(income, symbol: currencySymbol),
             icon: Icons.trending_up,
             color: AppTheme.incomeColor,
@@ -135,7 +143,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         const SizedBox(width: 12),
         Expanded(
           child: SummaryCard(
-            title: 'Expenses',
+            title: t('expenses'),
             value: Formatters.currency(expenses, symbol: currencySymbol),
             icon: Icons.trending_down,
             color: AppTheme.expenseColor,
@@ -162,7 +170,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Balance Trend',
+              _t('balanceTrend'),
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 24),
@@ -249,14 +257,14 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Spending by Category',
+                _t('spendingByCategory'),
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               const SizedBox(height: 40),
-              const Center(
+              Center(
                 child: Text(
-                  'No expenses this month',
-                  style: TextStyle(color: Colors.grey),
+                  _t('noExpenses'),
+                  style: const TextStyle(color: Colors.grey),
                 ),
               ),
               const SizedBox(height: 40),
@@ -305,7 +313,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Spending by Category',
+              _t('spendingByCategory'),
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 16),
@@ -378,7 +386,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'Recent Transactions',
+              _t('recentTransactions'),
               style: Theme.of(context).textTheme.titleMedium,
             ),
             TextButton(
@@ -386,7 +394,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 final bottomNavState = context.findAncestorStateOfType<MainNavigationState>();
                 bottomNavState?.setIndex(1);
               },
-              child: const Text('See All'),
+              child: Text(_t('seeAll')),
             ),
           ],
         ),
@@ -404,7 +412,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'No transactions yet',
+                      _t('noTransactions'),
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             color: Colors.grey,
                           ),
@@ -452,19 +460,19 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 const Icon(Icons.notifications_active, color: AppTheme.expenseColor),
                 const SizedBox(width: 8),
                 Text(
-                  'Budget Alerts',
+                  _t('budgetAlerts'),
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
               ],
             ),
             const SizedBox(height: 16),
             if (alerts.isEmpty)
-              const Padding(
-                padding: EdgeInsets.all(20),
+              Padding(
+                padding: const EdgeInsets.all(20),
                 child: Center(
                   child: Text(
-                    'No budget alerts',
-                    style: TextStyle(color: Colors.grey),
+                    _t('noBudgetAlerts'),
+                    style: const TextStyle(color: Colors.grey),
                   ),
                 ),
               )

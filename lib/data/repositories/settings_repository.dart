@@ -24,4 +24,9 @@ class SettingsRepository {
       currencySymbol: symbol,
     ));
   }
+
+  Future<void> setLanguage(String languageCode) async {
+    final current = getSettings();
+    await _box.put('settings', current.copyWith(languageCode: languageCode));
+  }
 }

@@ -1,6 +1,8 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/models/models.dart';
 import '../data/repositories/repositories.dart';
+import '../core/utils/app_translations.dart';
 
 final settingsRepositoryProvider = Provider((ref) => SettingsRepository());
 
@@ -33,6 +35,11 @@ class SettingsNotifier extends StateNotifier<AppSettingsModel> {
     await _repository.setCurrency(currency, symbol);
     loadSettings();
   }
+
+  Future<void> setLanguage(String languageCode) async {
+    await _repository.setLanguage(languageCode);
+    loadSettings();
+  }
 }
 
 final isDarkModeProvider = Provider<bool>((ref) {
@@ -41,4 +48,13 @@ final isDarkModeProvider = Provider<bool>((ref) {
 
 final currencySymbolProvider = Provider<String>((ref) {
   return ref.watch(settingsProvider).currencySymbol;
+});
+
+final localeProvider = Provider<Locale>((ref) {
+  return ref.watch(settingsProvider).locale;
+});
+
+final translationsProvider = Provider<AppTranslations>((ref) {
+  final languageCode = ref.watch(settingsProvider).languageCode;
+  return AppTranslations(languageCode);
 });

@@ -16,19 +16,22 @@ class AppSettingsModelAdapter extends TypeAdapter<AppSettingsModel> {
       isDarkMode: fields[0] as bool,
       currency: fields[1] as String,
       currencySymbol: fields[2] as String,
+      languageCode: fields[3] as String? ?? 'en',
     );
   }
 
   @override
   void write(BinaryWriter writer, AppSettingsModel obj) {
     writer
-      ..writeByte(3)
+      ..writeByte(4)
       ..writeByte(0)
       ..write(obj.isDarkMode)
       ..writeByte(1)
       ..write(obj.currency)
       ..writeByte(2)
-      ..write(obj.currencySymbol);
+      ..write(obj.currencySymbol)
+      ..writeByte(3)
+      ..write(obj.languageCode);
   }
 
   @override

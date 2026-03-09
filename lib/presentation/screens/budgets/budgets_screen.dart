@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/formatters.dart';
+import '../../../core/utils/app_translations.dart';
 import '../../../data/models/models.dart';
 import '../../../providers/providers.dart';
 import '../../widgets/widgets.dart';
@@ -17,6 +18,9 @@ class BudgetsScreen extends ConsumerWidget {
     final categories = ref.watch(expenseCategoriesProvider);
     final transactions = ref.watch(transactionsProvider);
     final currencySymbol = ref.watch(currencySymbolProvider);
+    final lang = ref.watch(settingsProvider).languageCode;
+    
+    String t(String key) => AppTranslations.get(key, lang);
 
     final categoryExpenses = <String, double>{};
     for (final t in transactions) {
@@ -29,7 +33,7 @@ class BudgetsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Budgets'),
+        title: Text(t('budgets')),
       ),
       body: Column(
         children: [
@@ -46,12 +50,12 @@ class BudgetsScreen extends ConsumerWidget {
             child: budgets.isEmpty
                 ? EmptyState(
                     icon: Icons.account_balance_wallet_outlined,
-                    title: 'No budgets set',
-                    subtitle: 'Set spending limits to track your expenses',
+                    title: t('noBudgets'),
+                    subtitle: t('addFirst'),
                     action: ElevatedButton.icon(
                       onPressed: () => _showAddBudget(context, categories),
                       icon: const Icon(Icons.add),
-                      label: const Text('Add Budget'),
+                      label: Text(t('addBudget')),
                     ),
                   )
                 : ListView.builder(
@@ -160,13 +164,13 @@ class BudgetsScreen extends ConsumerWidget {
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
                                     Text(
-                                      '${(percentage * 100).toStringAsFixed(0)}% used',
+                                      '${(percentage * 100).toStringAsFixed(0)}% ${t('used')}',
                                       style: Theme.of(context).textTheme.bodySmall,
                                     ),
                                     Text(
                                       remaining >= 0
-                                          ? '${Formatters.currency(remaining, symbol: currencySymbol)} remaining'
-                                          : '${Formatters.currency(-remaining, symbol: currencySymbol)} over budget',
+                                          ? '${Formatters.currency(remaining, symbol: currencySymbol)} ${t('remaining')}'
+                                          : '${Formatters.currency(-remaining, symbol: currencySymbol)} ${t('overBudget')}',
                                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                                             color: remaining >= 0 ? null : AppTheme.expenseColor,
                                           ),
@@ -186,7 +190,7 @@ class BudgetsScreen extends ConsumerWidget {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showAddBudget(context, categories),
         icon: const Icon(Icons.add),
-        label: const Text('Add Budget'),
+        label: Text(t('addBudget')),
       ).animate().scale(delay: 300.ms),
     );
   }
@@ -213,8 +217,8 @@ class BudgetsScreen extends ConsumerWidget {
     await ref.read(budgetsProvider.notifier).deleteBudget(budget.id);
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Budget deleted'),
+        SnackBar(
+          content: Text(AppTranslations.get('delete', ref.read(settingsProvider).languageCode)),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -264,6 +268,9 @@ class _AddBudgetScreenState extends ConsumerState<AddBudgetScreen> {
   Widget build(BuildContext context) {
     final selectedMonth = ref.watch(budgetSelectedMonthProvider);
     final currencySymbol = ref.watch(currencySymbolProvider);
+    final lang = ref.watch(settingsProvider).languageCode;
+    
+    String t(String key) => AppTranslations.get(key, lang);
 
     return Container(
       height: MediaQuery.of(context).size.height * 0.7,
@@ -288,7 +295,7 @@ class _AddBudgetScreenState extends ConsumerState<AddBudgetScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  isEditing ? 'Edit Budget' : 'Add Budget',
+                  isEditing ? t('editBudget') : t('addBudget'),
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
                 IconButton(
@@ -307,15 +314,15 @@ class _AddBudgetScreenState extends ConsumerState<AddBudgetScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildMonthDisplay(selectedMonth),
+                    _buildMonthDisplay(selectedMonth, t),
                     const SizedBox(height: 20),
-                    _buildCategorySelector(),
+                    _buildCategorySelector(t),
                     const SizedBox(height: 16),
-                    _buildLimitField(currencySymbol),
+                    _buildLimitField(currencySymbol, t),
                     const SizedBox(height: 20),
-                    _buildAlertSettings(),
+                    _buildAlertSettings(t),
                     const SizedBox(height: 24),
-                    _buildSubmitButton(),
+                    _buildSubmitButton(t),
                   ],
                 ),
               ),
@@ -326,7 +333,7 @@ class _AddBudgetScreenState extends ConsumerState<AddBudgetScreen> {
     );
   }
 
-  Widget _buildMonthDisplay(DateTime selectedMonth) {
+  Widget _buildMonthDisplay(DateTime selectedMonth, String Function(String) t) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -338,7 +345,7 @@ class _AddBudgetScreenState extends ConsumerState<AddBudgetScreen> {
           const Icon(Icons.calendar_today),
           const SizedBox(width: 12),
           Text(
-            'Budget for ${Formatters.monthYear(selectedMonth)}',
+            '${t('budgetFor')} ${Formatters.monthYear(selectedMonth)}',
             style: Theme.of(context).textTheme.titleMedium,
           ),
         ],
@@ -346,7 +353,7 @@ class _AddBudgetScreenState extends ConsumerState<AddBudgetScreen> {
     );
   }
 
-  Widget _buildCategorySelector() {
+  Widget _buildCategorySelector(String Function(String) t) {
     final existingBudgetCategories = ref.watch(monthlyBudgetsProvider)
         .map((b) => b.categoryId)
         .toSet();
@@ -359,12 +366,12 @@ class _AddBudgetScreenState extends ConsumerState<AddBudgetScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Category',
+          t('category'),
           style: Theme.of(context).textTheme.titleSmall,
         ),
         const SizedBox(height: 8),
         if (availableCategories.isEmpty)
-          const Text('All categories have budgets set')
+          Text(t('noCategories'))
         else
           Wrap(
             spacing: 8,
@@ -377,7 +384,7 @@ class _AddBudgetScreenState extends ConsumerState<AddBudgetScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(
                     color: isSelected
-                        ? Color(category.colorValue).withOpacity(0.2)
+                        ? Color(category.colorValue).withValues(alpha: 0.2)
                         : Theme.of(context).cardTheme.color,
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
@@ -406,27 +413,16 @@ class _AddBudgetScreenState extends ConsumerState<AddBudgetScreen> {
               );
             }).toList(),
           ),
-        if (_selectedCategoryId == null && availableCategories.isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.only(top: 8),
-            child: Text(
-              'Please select a category',
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.error,
-                fontSize: 12,
-              ),
-            ),
-          ),
       ],
     );
   }
 
-  Widget _buildLimitField(String currencySymbol) {
+  Widget _buildLimitField(String currencySymbol, String Function(String) t) {
     return TextFormField(
       controller: _limitController,
       keyboardType: const TextInputType.numberWithOptions(decimal: true),
       decoration: InputDecoration(
-        labelText: 'Budget Limit',
+        labelText: t('budgetLimit'),
         hintText: 'Enter budget limit',
         prefixIcon: const Icon(Icons.attach_money),
         prefixText: currencySymbol,
@@ -446,7 +442,7 @@ class _AddBudgetScreenState extends ConsumerState<AddBudgetScreen> {
     );
   }
 
-  Widget _buildAlertSettings() {
+  Widget _buildAlertSettings(String Function(String) t) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -457,7 +453,7 @@ class _AddBudgetScreenState extends ConsumerState<AddBudgetScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Alert Settings',
+                  t('alertSettings'),
                   style: Theme.of(context).textTheme.titleSmall,
                 ),
                 Switch(
@@ -469,7 +465,7 @@ class _AddBudgetScreenState extends ConsumerState<AddBudgetScreen> {
             if (_alertEnabled) ...[
               const SizedBox(height: 8),
               Text(
-                'Alert when ${(_alertThreshold * 100).toInt()}% of budget is used',
+                '${t('alertWhen')} ${(_alertThreshold * 100).toInt()}% ${t('ofBudgetUsed')}',
                 style: Theme.of(context).textTheme.bodySmall,
               ),
               const SizedBox(height: 8),
@@ -488,7 +484,7 @@ class _AddBudgetScreenState extends ConsumerState<AddBudgetScreen> {
     );
   }
 
-  Widget _buildSubmitButton() {
+  Widget _buildSubmitButton(String Function(String) t) {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
@@ -499,7 +495,7 @@ class _AddBudgetScreenState extends ConsumerState<AddBudgetScreen> {
                 width: 20,
                 child: CircularProgressIndicator(strokeWidth: 2),
               )
-            : Text(isEditing ? 'Update Budget' : 'Set Budget'),
+            : Text(isEditing ? t('save') : t('addBudget')),
       ),
     );
   }
@@ -508,8 +504,8 @@ class _AddBudgetScreenState extends ConsumerState<AddBudgetScreen> {
     if (!_formKey.currentState!.validate()) return;
     if (_selectedCategoryId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please select a category'),
+        SnackBar(
+          content: Text(AppTranslations.get('category', ref.read(settingsProvider).languageCode)),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -543,7 +539,7 @@ class _AddBudgetScreenState extends ConsumerState<AddBudgetScreen> {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(isEditing ? 'Budget updated' : 'Budget set'),
+            content: Text(isEditing ? AppTranslations.get('save', ref.read(settingsProvider).languageCode) : AppTranslations.get('addBudget', ref.read(settingsProvider).languageCode)),
             behavior: SnackBarBehavior.floating,
           ),
         );
